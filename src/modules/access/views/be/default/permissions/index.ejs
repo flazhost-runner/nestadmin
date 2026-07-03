@@ -1,0 +1,128 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Permission Management</h1>
+</div>
+
+<div class="tw-card p-0 overflow-hidden">
+  <div class="px-6 py-4 border-b flex items-center justify-between">
+    <h2 class="text-lg font-bold" style="color:var(--primary)">Permission List</h2>
+    <div class="btn-group btn-sm">
+      <a href="<%= route('admin.v1.access.permission.create') %>" class="btn btn-success btn-sm"><i class="fas fa-fw fa-plus"></i> Add Data</a>
+      <button type="submit" form="selection" formmethod="post" formaction="<%= route('admin.v1.access.permission.delete_selected') %>" data-confirm="Confirm Delete" class="btn btn-danger btn-sm"><i class="fas fa-fw fa-times"></i> Delete Selected</button>
+    </div>
+  </div>
+
+  <div class="p-4" style="overflow-x:auto">
+    <table class="table table-bordered table-hover align-middle">
+      <thead>
+        <form id="searchform">
+          <tr>
+            <th width="2%"></th>
+            <th width="7%">
+              <select name="q_page_size" id="q_page_size" class="form-control">
+                <option value="10" <%= ((!filter.q_page_size) ? 'selected' : (filter.q_page_size == 10)) ? 'selected' : '' %>>10</option>
+                <option value="20" <%= ((!filter.q_page_size) ? '' : (filter.q_page_size == 20)) ? 'selected' : '' %>>20</option>
+                <option value="50" <%= ((!filter.q_page_size) ? '' : (filter.q_page_size == 50)) ? 'selected' : '' %>>50</option>
+                <option value="100" <%= ((!filter.q_page_size) ? '' : (filter.q_page_size == 100)) ? 'selected' : '' %>>100</option>
+              </select>
+            </th>
+            <th width="18%"><input id="q_name" type="text" class="form-control" name="q_name" value="<%= filter.q_name || '' %>"></th>
+            <th width="9%">
+              <select name="q_guard" id="q_guard" class="form-control">
+                <option disabled selected>Select</option>
+                <option value="web" <%= ((!filter.q_guard) ? '' : (filter.q_guard == 'web')) ? 'selected' : '' %>>web</option>
+                <option value="api" <%= ((!filter.q_guard) ? '' : (filter.q_guard == 'api')) ? 'selected' : '' %>>api</option>
+              </select>
+            </th>
+            <th width="15%">
+              <select name="q_method" id="q_method" class="form-control">
+                <option disabled selected>Select</option>
+                <option value="GET" <%= ((!filter.q_method) ? '' : (filter.q_method == 'GET')) ? 'selected' : '' %>>GET</option>
+                <option value="POST" <%= ((!filter.q_method) ? '' : (filter.q_method == 'POST')) ? 'selected' : '' %>>POST</option>
+                <option value="PATCH" <%= ((!filter.q_method) ? '' : (filter.q_method == 'PATCH')) ? 'selected' : '' %>>PATCH</option>
+                <option value="PUT" <%= ((!filter.q_method) ? '' : (filter.q_method == 'PUT')) ? 'selected' : '' %>>PUT</option>
+                <option value="DELETE" <%= ((!filter.q_method) ? '' : (filter.q_method == 'DELETE')) ? 'selected' : '' %>>DELETE</option>
+              </select>
+            </th>
+            <th width="10%">
+              <select name="q_status" id="q_status" class="form-control">
+                <option disabled selected>Select</option>
+                <option value="Active" <%= ((!filter.q_status) ? '' : (filter.q_status == 'Active')) ? 'selected' : '' %>>Active</option>
+                <option value="Inactive" <%= ((!filter.q_status) ? '' : (filter.q_status == 'Inactive')) ? 'selected' : '' %>>Inactive</option>
+              </select>
+            </th>
+            <th width="15%"><input id="q_desc" type="text" class="form-control" name="q_desc" value="<%= filter.q_desc || '' %>"></th>
+            <th width="5%" class="text-center align-middle">
+              <div class="btn-group">
+                <button type="submit" form="searchform" class="btn btn-sm btn-success"><i class="fas fa-fw fa-search"></i></button>
+                <a href="<%= route('admin.v1.access.permission.index') %>" class="btn btn-sm btn-danger"><i class="fas fa-fw fa-times"></i></a>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <th width="5%"><input type="checkbox" id="checkall"/></th>
+            <th width="5%">No</th>
+            <th width="18%">Name</th>
+            <th width="9%">Guard</th>
+            <th width="15%">Method</th>
+            <th width="10%">Status</th>
+            <th width="15%">Description</th>
+            <th width="5%">Action</th>
+          </tr>
+        </form>
+      </thead>
+      <tbody>
+        <form id="selection">
+          <% datas.forEach((data,i) => { %>
+          <tr>
+            <td><input name="selected[]" value="<%= data.id %>" type="checkbox" /></td>
+            <td><%= (i+1)+(paginate_data.page_size*(paginate_data.current_page-1)) %></td>
+            <td><%= data.name %></td>
+            <td><span class="badge text-bg-primary"><%= data.guard_name %></span></td>
+            <td><%= data.method %></td>
+            <td class="text-left">
+              <% if (data.status == 'Active') { %>
+                <i class="fas fa-check-circle text-green-500 text-xl" title="Active"></i>
+              <% } else { %>
+                <i class="fas fa-times-circle text-red-500 text-xl" title="Inactive"></i>
+              <% } %>
+            </td>
+            <td><%= data.desc || '' %></td>
+            <td class="text-center">
+              <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle-dd aria-expanded="false">Action</button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <a href="<%= route('admin.v1.access.permission.edit', { id: data.id }) %>" class="dropdown-item"><i class="fas fa-pen fa-fw"></i> Edit</a>
+                  <div class="dropdown-divider"></div>
+                  <form method="post" action="<%= route('admin.v1.access.permission.delete', { id: data.id }) %>?_method=DELETE" class="m-0">
+                    <button type="submit" data-confirm="Confirm Delete" class="dropdown-item danger"><i class="fas fa-trash fa-fw"></i> Delete</button>
+                  </form>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+        </form>
+      </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end mt-4">
+      <nav>
+        <ul class="pagination">
+          <% if(paginate_data.current_page != 1) { %>
+          <li class="page-item"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', paginate_data.current_page-1) %>">Previous</a></li>
+          <% } %>
+          <% for(let index = 1; index <= paginate_data.total_page; index++) { %>
+          <li class="page-item <%= (index==paginate_data.current_page)?'active':'' %>"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', index) %>"><%= index %></a></li>
+          <% } %>
+          <% if(paginate_data.current_page != paginate_data.total_page && paginate_data.total_page!=0) { %>
+          <li class="page-item"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', paginate_data.current_page+1) %>">Next</a></li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+  $("#checkall").click(function(){ $('input:checkbox').not(this).prop('checked', this.checked); });
+</script>

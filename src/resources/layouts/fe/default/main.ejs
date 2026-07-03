@@ -1,0 +1,41 @@
+<%- include('./head.ejs') %>
+<body class="bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white">
+
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-50 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo/Brand -->
+        <div class="flex items-center gap-3">
+          <% if (typeof setting !== 'undefined' && setting && setting.logo) { %>
+          <img src="/<%= setting.logo %>" alt="Logo" class="h-8 w-auto">
+          <% } %>
+          <span class="text-lg font-bold text-neutral-900 dark:text-white">
+            <%= (typeof setting !== 'undefined' && setting && setting.name) ? setting.name : (process.env.APP_NAME || 'NestAdmin') %>
+          </span>
+        </div>
+        <!-- Nav links -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="#" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Home</a>
+          <a href="#" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">About</a>
+          <a href="#" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Services</a>
+          <a href="#" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Contact</a>
+          <a href="/admin/v1/setting" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-full transition-colors">Admin</a>
+        </div>
+        <!-- Mobile menu button -->
+        <button type="button" class="md:hidden p-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors" aria-label="Menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page content -->
+  <%- body %>
+
+  <%- include('./foot.ejs') %>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Profile</h1>
+</div>
+
+<div class="tw-card p-6">
+  <h2 class="text-lg font-bold mb-4" style="color:var(--primary)">User Form</h2>
+  <form method="POST" action="<%= route('admin.v1.profile.update') %>?_method=PUT" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="code" class="form-label fw-semibold">Code</label>
+      <input id="code" type="text" class="form-control <% if(getError('code')) { %>is-invalid<% } %>" name="code" value="<%= data.code || '' %>">
+      <% if(getError('code')) { %><div class="invalid-feedback"><%= getError('code')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="name" class="form-label fw-semibold">Name</label>
+      <input id="name" type="text" class="form-control <% if(getError('name')) { %>is-invalid<% } %>" name="name" value="<%= data.name || '' %>">
+      <% if(getError('name')) { %><div class="invalid-feedback"><%= getError('name')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="phone" class="form-label fw-semibold">Phone Number</label>
+      <input id="phone" type="text" class="form-control <% if(getError('phone')) { %>is-invalid<% } %>" name="phone" value="<%= data.phone || '' %>">
+      <% if(getError('phone')) { %><div class="invalid-feedback"><%= getError('phone')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label fw-semibold">Email</label>
+      <input id="email" type="email" class="form-control <% if(getError('email')) { %>is-invalid<% } %>" name="email" value="<%= data.email || '' %>">
+      <% if(getError('email')) { %><div class="invalid-feedback"><%= getError('email')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="timezone" class="form-label fw-semibold">Timezone</label>
+      <select id="timezone" name="timezone" class="form-control <% if(getError('timezone')) { %>is-invalid<% } %>">
+        <% (timezones || []).forEach(function(tz) { %>
+          <option value="<%= tz %>" <%= (data.timezone === tz) ? 'selected' : '' %>><%= tz %></option>
+        <% }); %>
+      </select>
+      <% if(getError('timezone')) { %><div class="invalid-feedback"><%= getError('timezone')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label fw-semibold">Password</label>
+      <input id="password" type="password" class="form-control <% if(getError('password')) { %>is-invalid<% } %>" name="password" value="" autocomplete="off">
+      <% if(getError('password')) { %><div class="invalid-feedback"><%= getError('password')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="password_confirmation" class="form-label fw-semibold">Password Confirm</label>
+      <input id="password_confirmation" type="password" class="form-control <% if(getError('password_confirmation')) { %>is-invalid<% } %>" name="password_confirmation" value="">
+      <% if(getError('password_confirmation')) { %><div class="invalid-feedback"><%= getError('password_confirmation')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="status" class="form-label fw-semibold">Status</label>
+      <select name="status" id="status" class="form-control <% if(getError('status')) { %>is-invalid<% } %>" required>
+        <option value="Active" <%= (data.status == 'Active') ? 'selected' : '' %>>Active</option>
+        <option value="Inactive" <%= (data.status == 'Inactive') ? 'selected' : '' %>>Inactive</option>
+      </select>
+      <% if(getError('status')) { %><div class="invalid-feedback"><%= getError('status')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-4">
+      <label for="picture" class="form-label fw-semibold">Picture</label>
+      <div class="d-flex align-items-center gap-3">
+        <img id="picturePreview" src="<%= getFile(data.picture || 'modules/access/user/user.png') %>" width="90" height="90"
+             class="rounded border p-1" style="object-fit:contain;background:#f8fafc"
+             onerror="this.style.visibility='hidden'">
+        <input id="picture" type="file" name="picture" accept="image/*" class="form-control <% if(getError('picture')) { %>is-invalid<% } %>">
+      </div>
+      <% if(getError('picture')) { %><div class="text-danger small mt-1"><%= getError('picture')['msg'] %></div><% } %>
+    </div>
+    <button type="submit" class="btn btn-primary-tw px-4 py-2"><i class="fas fa-save me-1"></i> Save</button>
+  </form>
+</div>
+
+<script>
+  (function () {
+    var input = document.getElementById('picture'), prev = document.getElementById('picturePreview');
+    if (!input || !prev) return;
+    input.addEventListener('change', function () {
+      var f = this.files && this.files[0];
+      if (f && f.type.startsWith('image/')) { prev.src = URL.createObjectURL(f); prev.style.visibility = 'visible'; }
+    });
+  })();
+</script>

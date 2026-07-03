@@ -1,0 +1,29 @@
+<%- include('./head.ejs') %>
+    <body id="page-top" class="min-h-screen">
+        <%- include('./sidebar.ejs') %>
+
+        <!-- Content wrapper (offset untuk sidebar di desktop) -->
+        <div class="md:ml-64 min-h-screen flex flex-col">
+            <div class="px-4 md:px-6 pt-4">
+                <%- include('./topbar.ejs') %>
+            </div>
+
+            <main class="flex-1 px-4 md:px-6 pb-10">
+                <%- body %>
+            </main>
+        </div>
+
+        <%- include('./foot.ejs') %>
+
+        <!-- Flash message → Toast (global, semua halaman admin) -->
+        <% if (typeof flashMessage !== 'undefined' && flashMessage && flashMessage.message) { %>
+        <script>
+            (function () {
+                var type = '<%- flashMessage.key %>' === 'success' ? 'success'
+                         : '<%- flashMessage.key %>' === 'error' ? 'error' : 'info';
+                Toast(<%- JSON.stringify(flashMessage.message) %>, type);
+            })();
+        </script>
+        <% } %>
+    </body>
+</html>

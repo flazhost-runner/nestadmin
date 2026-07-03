@@ -1,0 +1,49 @@
+<meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+<div class="w-full max-w-5xl tw-card overflow-hidden grid md:grid-cols-2">
+  <div class="hidden md:flex sidebar-gradient items-center justify-center p-10">
+    <img src="<%= getFile('/modules/setting/login-image.png') %>" alt="Register" class="max-w-full rounded-lg">
+  </div>
+
+  <div class="p-8 md:p-12 flex flex-col justify-center">
+    <% if (typeof setting !== 'undefined' && setting && setting.logo) { %>
+    <img src="<%= getFile(setting.logo) %>" alt="Logo" class="h-14 mx-auto object-contain mb-6">
+    <% } %>
+
+    <% if (typeof errorMessages !== 'undefined' && errorMessages && errorMessages.length) { %>
+    <div class="alert alert-danger mb-3">
+      <ul class="mb-0 ps-3">
+        <% errorMessages.forEach(function(msg) { %>
+        <li><%= msg %></li>
+        <% }) %>
+      </ul>
+    </div>
+    <% } %>
+
+    <h1 class="text-2xl font-bold mb-1" style="color:var(--primary)">Create Account</h1>
+    <p class="text-sm text-gray-500 mb-4">Fill the form to register</p>
+
+    <form method="POST" action="/auth/register">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+      <div class="mb-3">
+        <input type="text" name="name" class="form-control" placeholder="Full name" autocomplete="name">
+      </div>
+
+      <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email address" autocomplete="email">
+      </div>
+
+      <div class="mb-3">
+        <input type="password" name="password" class="form-control" placeholder="Password" autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="btn btn-primary-tw w-100 py-2 mb-3">Create Account</button>
+
+      <hr class="my-4">
+      <p class="text-gray-500 text-center text-sm">Already have an account?
+        <a href="/auth/login" class="text-primary-tw text-decoration-none fw-semibold">login here</a>
+      </p>
+    </form>
+  </div>
+</div>

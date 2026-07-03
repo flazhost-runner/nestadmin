@@ -1,0 +1,38 @@
+<meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+<div class="w-full max-w-5xl tw-card overflow-hidden grid md:grid-cols-2">
+  <div class="hidden md:flex sidebar-gradient items-center justify-center p-10">
+    <img src="/uploads/modules/setting/login-image.png" alt="Forgot Password" class="max-w-full rounded-lg">
+  </div>
+
+  <div class="p-8 md:p-12 flex flex-col justify-center">
+    <% if (typeof setting !== 'undefined' && setting && setting.logo) { %>
+    <img src="<%= getFile(setting.logo) %>" alt="Logo" class="h-14 mx-auto object-contain mb-6">
+    <% } %>
+
+    <% if (typeof flash !== 'undefined' && flash && flash.success && flash.success.length) { %>
+    <div class="alert alert-success mb-3"><%= flash.success[0] %></div>
+    <% } %>
+
+    <% if (typeof flash !== 'undefined' && flash && flash.error && flash.error.length) { %>
+    <div class="alert alert-danger mb-3"><%= flash.error[0] %></div>
+    <% } %>
+
+    <h1 class="text-2xl font-bold mb-1" style="color:var(--primary)">Forgot Password</h1>
+    <p class="text-sm text-gray-500 mb-4">Enter your Email to continue</p>
+
+    <form method="POST" action="/admin/v1/auth/reset/request">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+      <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email address">
+      </div>
+
+      <button type="submit" class="btn btn-primary-tw w-100 py-2 mb-3">Send OTP</button>
+
+      <p class="text-center text-sm">
+        <a href="/auth/login" class="text-primary-tw text-decoration-none">back?</a>
+      </p>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,66 @@
+<meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+<div class="w-full max-w-5xl tw-card overflow-hidden grid md:grid-cols-2">
+  <%# Left panel — decorative image %>
+  <div class="hidden md:flex sidebar-gradient items-center justify-center p-10">
+    <img src="<%= getFile('/modules/setting/login-image.png') %>" alt="Login" class="max-w-full rounded-lg">
+  </div>
+
+  <%# Right panel — form %>
+  <div class="p-8 md:p-12 flex flex-col justify-center">
+    <% if (typeof setting !== 'undefined' && setting && setting.logo) { %>
+    <img src="<%= getFile(setting.logo) %>" alt="Logo" class="h-14 mx-auto object-contain mb-6">
+    <% } %>
+
+    <%# Validation errorMessages array %>
+    <% if (typeof errorMessages !== 'undefined' && errorMessages && errorMessages.length) { %>
+    <div class="alert alert-danger mb-3">
+      <ul class="mb-0 ps-3">
+        <% errorMessages.forEach(function(msg) { %>
+        <li><%= msg %></li>
+        <% }) %>
+      </ul>
+    </div>
+    <% } %>
+
+    <%# Single flash error %>
+    <% if (typeof flash !== 'undefined' && flash && flash.error && flash.error.length) { %>
+    <div class="alert alert-danger mb-3"><%= flash.error[0] %></div>
+    <% } %>
+
+    <%# Single flash success %>
+    <% if (typeof flash !== 'undefined' && flash && flash.success && flash.success.length) { %>
+    <div class="alert alert-success mb-3"><%= flash.success[0] %></div>
+    <% } %>
+
+    <h1 class="text-2xl font-bold mb-1" style="color:var(--primary)">Hello, Welcome Back!</h1>
+    <p class="text-sm text-gray-500 mb-4">Enter your credentials to continue</p>
+
+    <form method="POST" action="/auth/login">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+      <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email address">
+      </div>
+
+      <div class="mb-3">
+        <input type="password" name="password" class="form-control" placeholder="Password">
+      </div>
+
+      <button type="submit" class="btn btn-primary-tw w-100 py-2 mb-3">Login</button>
+
+      <div class="d-flex justify-content-between small mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="remember" name="remember">
+          <label class="form-check-label" for="remember">Keep me logged in</label>
+        </div>
+        <a href="/admin/v1/auth/reset/req" class="text-primary-tw text-decoration-none">Forgot password</a>
+      </div>
+
+      <hr class="my-4">
+      <p class="text-gray-500 text-center text-sm">Don't have an account?
+        <a href="/auth/register" class="text-primary-tw text-decoration-none fw-semibold">create here</a>
+      </p>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,386 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Setting Management</h1>
+</div>
+
+<!-- Form pencarian katalog FE (GET, terpisah dari form POST setting). -->
+<form id="fe_search" method="GET" action="<%= route('admin.v1.setting.index') %>"></form>
+
+<form method="POST" action="<%= route('admin.v1.setting.update') %>?_method=PUT" enctype="multipart/form-data">
+
+  <!-- ===== Template / Theme Switcher ===== -->
+  <div class="tw-card p-6 mb-6">
+    <div class="flex items-center gap-2 mb-1">
+      <i class="fas fa-palette" style="color:var(--primary)"></i>
+      <h2 class="text-lg font-bold" style="color:var(--primary)">Admin Theme</h2>
+    </div>
+    <p class="text-sm text-gray-500 mb-4">Pilih template — seluruh tampilan admin akan berubah warnanya setelah disimpan.</p>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      <% Object.keys(themes).forEach(function(name) { var p = themes[name]; var active = (data.theme || themeName) === name; %>
+        <label class="cursor-pointer block">
+          <input type="radio" name="theme" value="<%= name %>" class="sr-only theme-radio" <%= active ? 'checked' : '' %>>
+          <div class="theme-swatch rounded-xl overflow-hidden border-2 transition <%= active ? 'border-gray-800' : 'border-transparent' %>"
+               style="box-shadow:0 4px 10px rgba(0,0,0,.08)">
+            <div class="h-16 flex">
+              <div class="flex-1" style="background:<%= p.dark %>"></div>
+              <div class="flex-1" style="background:<%= p.primary %>"></div>
+              <div class="flex-1" style="background:<%= p.secondary %>"></div>
+              <div class="flex-1" style="background:<%= p.light %>"></div>
+            </div>
+            <div class="bg-white py-2 px-3 flex items-center justify-between">
+              <span class="text-sm font-semibold text-gray-700"><%= name %></span>
+              <i class="fas fa-check-circle check-icon <%= active ? '' : 'hidden' %>" style="color:<%= p.primary %>"></i>
+            </div>
+          </div>
+        </label>
+      <% }); %>
+    </div>
+  </div>
+
+  <!-- ===== Frontend Template Switcher ===== -->
+  <% var feActive = (data.fe_template || feTemplate); %>
+  <div class="tw-card p-6 mb-6">
+    <div class="flex items-center gap-2 mb-1">
+      <i class="fas fa-window-maximize" style="color:var(--primary)"></i>
+      <h2 class="text-lg font-bold" style="color:var(--primary)">Frontend Template</h2>
+    </div>
+    <p class="text-sm text-gray-500 mb-4">
+      Pilih desain halaman depan (landing) publik
+      (<%= paginate_data.total_data %> template tersedia). Klik <b>Preview</b> untuk lihat penuh.
+      Template terpilih diunduh &amp; di-cache saat <b>Save</b>. Lihat hasilnya di
+      <a href="/" target="_blank" class="underline" style="color:var(--primary)">halaman depan ↗</a>.
+    </p>
+
+    <input type="hidden" id="fe_template_input" name="fe_template" value="<%= feActive %>">
+
+    <!-- Search + filter kategori -->
+    <div class="flex flex-wrap items-end gap-2 mb-4">
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">Cari nama</label>
+        <input form="fe_search" type="text" name="q_name" value="<%= filter.q_name || '' %>"
+               placeholder="mis. agency, saas…" class="form-control" style="min-width:220px">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">Kategori</label>
+        <select form="fe_search" name="q_category" class="form-control" style="min-width:200px">
+          <option value="">Semua kategori</option>
+          <% feCategories.forEach(function(c) { %>
+            <option value="<%= c %>" <%= (filter.q_category === c) ? 'selected' : '' %>><%= c %></option>
+          <% }); %>
+        </select>
+      </div>
+      <input form="fe_search" type="hidden" name="q_page_size" value="<%= paginate_data.page_size %>">
+      <button form="fe_search" type="submit" class="btn btn-success btn-sm" style="height:38px">
+        <i class="fas fa-search me-1"></i> Cari
+      </button>
+      <a href="<%= route('admin.v1.setting.index') %>" class="btn btn-danger btn-sm" style="height:38px">
+        <i class="fas fa-times me-1"></i> Reset
+      </a>
+    </div>
+
+    <% if (feTemplates.length === 0) { %>
+      <div class="text-center text-gray-400 py-10">
+        <i class="fas fa-window-maximize fa-2x mb-2"></i>
+        <p>Belum ada template FE terdaftar.</p>
+        <p class="text-xs mt-1">Hubungkan ke katalog opentailwind untuk menampilkan pilihan template.</p>
+      </div>
+    <% } %>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <% feTemplates.forEach(function(t) { var active = (feActive === t.slug); %>
+        <div class="fe-card block" data-slug="<%= t.slug %>">
+          <div class="fe-swatch rounded-xl overflow-hidden border-2 transition <%= active ? 'border-gray-900' : 'border-gray-300' %>"
+               style="box-shadow:0 2px 8px rgba(0,0,0,.12)">
+            <div class="fe-thumb fe-preview-trigger relative bg-gray-100 cursor-pointer group" data-slug="<%= t.slug %>"
+                 data-name="<%= t.name %>"
+                 style="height:140px;overflow:hidden;border-bottom:1px solid #d1d5db"
+                 data-preview-url="<%= route('admin.v1.setting.fe_preview', { slug: t.slug }) %>">
+              <div class="fe-thumb-placeholder absolute inset-0 flex items-center justify-center text-gray-300">
+                <i class="fas fa-spinner fa-spin"></i>
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                   style="background:rgba(0,0,0,.45);pointer-events:none">
+                <span class="text-white text-sm font-semibold"><i class="fas fa-eye me-1"></i> Preview</span>
+              </div>
+            </div>
+            <div class="bg-white py-2 px-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-800 truncate" title="<%= t.name %>"><%= t.name %></span>
+                <i class="fas fa-check-circle fe-check <%= active ? '' : 'hidden' %>" style="color:var(--primary)"></i>
+              </div>
+              <span class="text-xs text-gray-400"><%= t.category %></span>
+              <button type="button" class="fe-select btn btn-sm w-100 mt-2 fw-bold <%= active ? 'btn-primary-tw' : '' %>" style="font-size:13px">
+                <i class="fas <%= active ? 'fa-check' : 'fa-hand-pointer' %> me-1"></i> <%= active ? 'TERPILIH' : 'PILIH' %>
+              </button>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Pagination katalog -->
+    <% if (paginate_data.total_page > 1) { %>
+    <div class="d-flex justify-content-center mt-5">
+      <nav>
+        <ul class="pagination">
+          <% if(paginate_data.current_page != 1) { %>
+          <li class="page-item"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', paginate_data.current_page-1) %>">Previous</a></li>
+          <% } %>
+          <%
+            var cur = paginate_data.current_page, tp = paginate_data.total_page;
+            var from = Math.max(1, cur-2), to = Math.min(tp, cur+2);
+          %>
+          <% if (from > 1) { %>
+            <li class="page-item"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', 1) %>">1</a></li>
+            <% if (from > 2) { %><li class="page-item disabled"><span class="page-link">…</span></li><% } %>
+          <% } %>
+          <% for(let index = from; index <= to; index++) { %>
+          <li class="page-item <%= (index==cur)?'active':'' %>"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', index) %>"><%= index %></a></li>
+          <% } %>
+          <% if (to < tp) { %>
+            <% if (to < tp-1) { %><li class="page-item disabled"><span class="page-link">…</span></li><% } %>
+            <li class="page-item"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', tp) %>"><%= tp %></a></li>
+          <% } %>
+          <% if(paginate_data.current_page != paginate_data.total_page) { %>
+          <li class="page-item"><a class="page-link" href="<%= addOrUpdateQueryParam(fullUrl, 'q_page', paginate_data.current_page+1) %>">Next</a></li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- ===== Form Setting ===== -->
+  <div class="tw-card p-6">
+    <h2 class="text-lg font-bold mb-4" style="color:var(--primary)">Setting Form</h2>
+
+    <div class="mb-3">
+      <label for="initial" class="form-label fw-semibold">Company Initial [initial]</label>
+      <input id="initial" type="text" class="form-control <% if(getError('initial')) { %>is-invalid<% } %>" name="initial" value="<%= data.initial || '' %>">
+      <% if(getError('initial')) { %><div class="invalid-feedback"><%= getError('initial')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-3">
+      <label for="name" class="form-label fw-semibold">Company Name [name]</label>
+      <input id="name" type="text" class="form-control <% if(getError('name')) { %>is-invalid<% } %>" name="name" value="<%= data.name || '' %>">
+      <% if(getError('name')) { %><div class="invalid-feedback"><%= getError('name')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label fw-semibold">Description [description]</label>
+      <textarea id="description" class="trumbowyg-editor form-control <% if(getError('description')) { %>is-invalid<% } %>" name="description"><%- data.description || '' %></textarea>
+      <% if(getError('description')) { %><div class="invalid-feedback"><%= getError('description')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-4">
+      <label for="icon" class="form-label fw-semibold">Company Icon [icon]</label>
+      <div class="d-flex align-items-center gap-3">
+        <img src="<%= getFile(data.icon) %>" width="90" height="90" class="rounded border p-1" style="object-fit:contain">
+        <input id="icon" type="file" class="form-control <% if(getError('icon')) { %>is-invalid<% } %>" name="icon">
+      </div>
+      <% if(getError('icon')) { %><div class="text-danger small mt-1"><%= getError('icon')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-4">
+      <label for="logo" class="form-label fw-semibold">Company Logo [logo]</label>
+      <div class="d-flex align-items-center gap-3">
+        <img src="<%= getFile(data.logo) %>" width="90" height="90" class="rounded border p-1" style="object-fit:contain">
+        <input id="logo" type="file" class="form-control <% if(getError('logo')) { %>is-invalid<% } %>" name="logo">
+      </div>
+      <% if(getError('logo')) { %><div class="text-danger small mt-1"><%= getError('logo')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-4">
+      <label for="login_image" class="form-label fw-semibold">Login Image [login_image]</label>
+      <div class="d-flex align-items-center gap-3">
+        <img src="<%= getFile(data.login_image) %>" width="90" height="90" class="rounded border p-1" style="object-fit:contain">
+        <input id="login_image" type="file" class="form-control <% if(getError('login_image')) { %>is-invalid<% } %>" name="login_image">
+      </div>
+      <% if(getError('login_image')) { %><div class="text-danger small mt-1"><%= getError('login_image')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-3">
+      <label for="phone" class="form-label fw-semibold">Phone [phone]</label>
+      <input id="phone" type="text" class="form-control <% if(getError('phone')) { %>is-invalid<% } %>" name="phone" value="<%= data.phone || '' %>">
+      <% if(getError('phone')) { %><div class="invalid-feedback"><%= getError('phone')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-3">
+      <label for="address" class="form-label fw-semibold">Address [address]</label>
+      <input id="address" type="text" class="form-control <% if(getError('address')) { %>is-invalid<% } %>" name="address" value="<%= data.address || '' %>">
+      <% if(getError('address')) { %><div class="invalid-feedback"><%= getError('address')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label fw-semibold">Email [email]</label>
+      <input id="email" type="email" class="form-control <% if(getError('email')) { %>is-invalid<% } %>" name="email" value="<%= data.email || '' %>">
+      <% if(getError('email')) { %><div class="invalid-feedback"><%= getError('email')['msg'] %></div><% } %>
+    </div>
+
+    <div class="mb-4">
+      <label for="copyright" class="form-label fw-semibold">Copyright Text [copyright]</label>
+      <input id="copyright" type="text" class="form-control <% if(getError('copyright')) { %>is-invalid<% } %>" name="copyright" value="<%= data.copyright || '' %>">
+      <% if(getError('copyright')) { %><div class="invalid-feedback"><%= getError('copyright')['msg'] %></div><% } %>
+    </div>
+
+    <button type="submit" class="btn btn-primary-tw px-4 py-2">
+      <i class="fas fa-save me-1"></i> Save
+    </button>
+  </div>
+</form>
+
+<script>
+  // Highlight swatch terpilih secara langsung (UX) sebelum submit
+  document.querySelectorAll('.theme-radio').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.theme-swatch').forEach(function (s) {
+        s.classList.remove('border-gray-800'); s.classList.add('border-transparent');
+      });
+      document.querySelectorAll('.check-icon').forEach(function (c) { c.classList.add('hidden'); });
+      var box = r.closest('label').querySelector('.theme-swatch');
+      box.classList.add('border-gray-800'); box.classList.remove('border-transparent');
+      r.closest('label').querySelector('.check-icon').classList.remove('hidden');
+    });
+  });
+
+  // ===== Frontend Template katalog: cache HTML di localStorage =====
+  // Tunggu DOM siap — markup modal berada SETELAH <script> ini.
+  document.addEventListener('DOMContentLoaded', function () {
+    var LS_PREFIX = 'fe_tpl_html:';   // per-slug HTML cache
+    var LS_SEL = 'fe_tpl_selected';   // slug terpilih (persist lintas halaman)
+    var input = document.getElementById('fe_template_input');
+
+    // Pulihkan pilihan dari localStorage bila ada (mis. setelah ganti halaman katalog)
+    var savedSel = localStorage.getItem(LS_SEL);
+    if (savedSel && input) input.value = savedSel;
+
+    // Template opentailwind pakai `dark:` variant (Tailwind v4) yang default-nya
+    // mengikuti prefers-color-scheme. Saat browser admin dark-mode, preview ikut
+    // gelap. Paksa light: (1) redefine variant `dark` jadi class-based via
+    // <style type="text/tailwindcss"> — iframe tak punya .dark jadi selalu light;
+    // (2) override color-scheme agar form/scrollbar bawaan tak ikut gelap.
+    function forceLight(html) {
+      var inject =
+        '<meta name="color-scheme" content="light">' +
+        '<style type="text/tailwindcss">@custom-variant dark (&:where(.dark, .dark *));</style>' +
+        '<style>:root{color-scheme:light !important}' +
+        '@media (prefers-color-scheme: dark){:root{color-scheme:light !important}}</style>';
+      if (/<head[^>]*>/i.test(html)) {
+        return html.replace(/<head[^>]*>/i, function (m) { return m + inject; });
+      }
+      return inject + html;
+    }
+
+    // Ambil HTML 1 template: dari localStorage atau fetch ke server lalu cache.
+    function getHtml(slug, url) {
+      var cached = null;
+      try { cached = localStorage.getItem(LS_PREFIX + slug); } catch (e) {}
+      if (cached) return Promise.resolve(cached);
+      return fetch(url, { credentials: 'same-origin' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+        .then(function (html) {
+          try { localStorage.setItem(LS_PREFIX + slug, html); } catch (e) { /* kuota penuh: skip */ }
+          return html;
+        });
+    }
+
+    // Render thumbnail iframe (di-scale agar ringan & terlihat seperti screenshot).
+    function renderThumb(box) {
+      var slug = box.getAttribute('data-slug');
+      var url = box.getAttribute('data-preview-url');
+      getHtml(slug, url).then(function (html) {
+        var ph = box.querySelector('.fe-thumb-placeholder');
+        if (ph) ph.remove();
+        var ifr = document.createElement('iframe');
+        ifr.setAttribute('scrolling', 'no');
+        ifr.setAttribute('loading', 'lazy');
+        var DESIGN_W = 1280;
+        var scale = (box.clientWidth || 280) / DESIGN_W;
+        ifr.style.cssText = 'width:' + DESIGN_W + 'px;height:' + Math.ceil(140 / scale) +
+          'px;border:0;transform:scale(' + scale + ');transform-origin:top left;pointer-events:none';
+        ifr.srcdoc = forceLight(html);
+        box.appendChild(ifr);
+      }).catch(function () {
+        var ph = box.querySelector('.fe-thumb-placeholder');
+        if (ph) ph.innerHTML = '<i class="fas fa-image text-2xl"></i>';
+      });
+    }
+
+    // Lazy-load thumbnail saat kartu terlihat (hemat bandwidth & CPU).
+    var thumbs = document.querySelectorAll('.fe-thumb');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { renderThumb(en.target); io.unobserve(en.target); }
+        });
+      }, { rootMargin: '200px' });
+      thumbs.forEach(function (t) { io.observe(t); });
+    } else {
+      thumbs.forEach(renderThumb);
+    }
+
+    // Pilih template → set hidden input + simpan ke localStorage + update UI.
+    function selectSlug(slug) {
+      if (input) input.value = slug;
+      try { localStorage.setItem(LS_SEL, slug); } catch (e) {}
+      document.querySelectorAll('.fe-card').forEach(function (card) {
+        var active = card.getAttribute('data-slug') === slug;
+        var swatch = card.querySelector('.fe-swatch');
+        var check = card.querySelector('.fe-check');
+        var btn = card.querySelector('.fe-select');
+        if (swatch) { swatch.classList.toggle('border-gray-900', active); swatch.classList.toggle('border-gray-300', !active); }
+        if (check) check.classList.toggle('hidden', !active);
+        if (btn) {
+          btn.innerHTML = active
+            ? '<i class="fas fa-check me-1"></i> TERPILIH'
+            : '<i class="fas fa-hand-pointer me-1"></i> PILIH';
+          btn.classList.toggle('btn-primary-tw', active);
+          btn.classList.toggle('btn-outline-dark', !active);
+        }
+      });
+    }
+
+    document.querySelectorAll('.fe-select').forEach(function (b) {
+      b.addEventListener('click', function () {
+        selectSlug(this.closest('.fe-card').getAttribute('data-slug'));
+      });
+    });
+    // Sinkronkan tampilan awal dengan pilihan tersimpan.
+    if (input && input.value) selectSlug(input.value);
+
+    // ===== Modal Preview penuh =====
+    var modal = document.getElementById('fe-preview-modal');
+    var frame = document.getElementById('fe-preview-frame');
+    var title = document.getElementById('fe-preview-title');
+    function openModal(slug, name, url) {
+      title.textContent = name;
+      frame.srcdoc = '<div style="font-family:sans-serif;padding:40px">Memuat…</div>';
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      getHtml(slug, url).then(function (html) { frame.srcdoc = forceLight(html); })
+        .catch(function () { frame.srcdoc = '<p style="padding:40px;font-family:sans-serif">Gagal memuat preview.</p>'; });
+    }
+    function closeModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); frame.srcdoc = ''; }
+    document.querySelectorAll('.fe-preview-trigger').forEach(function (b) {
+      b.addEventListener('click', function () {
+        openModal(this.getAttribute('data-slug'), this.getAttribute('data-name'), this.getAttribute('data-preview-url'));
+      });
+    });
+    // (a) Close button click
+    document.getElementById('fe-preview-close').addEventListener('click', closeModal);
+    // (b) Backdrop click
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    // (c) ESC key press
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  });
+</script>
+
+<!-- Modal preview penuh template FE -->
+<div id="fe-preview-modal" class="hidden fixed inset-0 z-50 items-center justify-center" style="background:rgba(0,0,0,.6)">
+  <div class="bg-white rounded-xl overflow-hidden shadow-2xl" style="width:92vw;height:90vh;display:flex;flex-direction:column">
+    <div class="flex items-center justify-between px-4 py-3 border-b">
+      <h3 id="fe-preview-title" class="font-bold text-gray-800">Preview</h3>
+      <button id="fe-preview-close" type="button" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Tutup</button>
+    </div>
+    <iframe id="fe-preview-frame" class="flex-1 w-full" style="border:0"></iframe>
+  </div>
+</div>

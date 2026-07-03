@@ -1,0 +1,106 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
+</div>
+
+<div class="tw-card p-6">
+  <h2 class="text-lg font-bold mb-4" style="color:var(--primary)">User Form</h2>
+  <form method="POST" action="<%= route('admin.v1.access.user.update', { id: data.id }) %>?_method=PUT" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="code" class="form-label fw-semibold">Code</label>
+      <input id="code" type="text" class="form-control <% if(getError('code')) { %>is-invalid<% } %>" name="code" value="<%= data.code %>">
+      <% if(getError('code')) { %><div class="invalid-feedback"><%= getError('code')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="name" class="form-label fw-semibold">Name</label>
+      <input id="name" type="text" class="form-control <% if(getError('name')) { %>is-invalid<% } %>" name="name" value="<%= data.name %>">
+      <% if(getError('name')) { %><div class="invalid-feedback"><%= getError('name')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="phone" class="form-label fw-semibold">Phone Number</label>
+      <input id="phone" type="text" class="form-control <% if(getError('phone')) { %>is-invalid<% } %>" name="phone" value="<%= data.phone || '' %>">
+      <% if(getError('phone')) { %><div class="invalid-feedback"><%= getError('phone')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label fw-semibold">Email</label>
+      <input id="email" type="email" class="form-control <% if(getError('email')) { %>is-invalid<% } %>" name="email" value="<%= data.email %>">
+      <% if(getError('email')) { %><div class="invalid-feedback"><%= getError('email')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="timezone" class="form-label fw-semibold">Timezone</label>
+      <select id="timezone" name="timezone" class="form-control <% if(getError('timezone')) { %>is-invalid<% } %>">
+        <% (timezones || []).forEach(function(tz) { %>
+          <option value="<%= tz %>" <%= (data.timezone === tz) ? 'selected' : '' %>><%= tz %></option>
+        <% }) %>
+      </select>
+      <% if(getError('timezone')) { %><div class="invalid-feedback"><%= getError('timezone')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label fw-semibold">Password <small class="text-muted">(leave blank to keep current)</small></label>
+      <input id="password" type="password" class="form-control <% if(getError('password')) { %>is-invalid<% } %>" name="password" value="">
+      <% if(getError('password')) { %><div class="invalid-feedback"><%= getError('password')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="password_confirmation" class="form-label fw-semibold">Password Confirm</label>
+      <input id="password_confirmation" type="password" class="form-control <% if(getError('password_confirmation')) { %>is-invalid<% } %>" name="password_confirmation" value="">
+      <% if(getError('password_confirmation')) { %><div class="invalid-feedback"><%= getError('password_confirmation')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="status" class="form-label fw-semibold">Status</label>
+      <select name="status" id="status" class="form-control <% if(getError('status')) { %>is-invalid<% } %>" required>
+        <option value="Active" <%= (data.status == 'Active') ? 'selected' : '' %>>Active</option>
+        <option value="Inactive" <%= (data.status == 'Inactive') ? 'selected' : '' %>>Inactive</option>
+      </select>
+      <% if(getError('status')) { %><div class="invalid-feedback"><%= getError('status')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label for="picture" class="form-label fw-semibold">Picture</label>
+      <div class="preview mb-3" id="preview"><img src="<%= getFile(data.picture||'modules/access/user/user.png') %>" style="max-width:160px" class="rounded border p-1"></div>
+      <input id="picture" type="file" class="form-control <% if(getError('picture')) { %>is-invalid<% } %>" name="picture" onchange="previewImage(event)">
+      <% if(getError('picture')) { %><div class="text-danger small mt-1"><%= getError('picture')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold d-block">Blocked</label>
+      <div class="d-flex flex-wrap gap-3 p-2 rounded border">
+        <label class="d-flex align-items-center gap-2"><input id="blocked" type="checkbox" name="blocked" value="1" class="w-4 h-4" <%= (data.blocked) ? 'checked' : '' %>><span>Blokir akun</span></label>
+      </div>
+    </div>
+    <div class="mb-3" id="div_blocked_reason">
+      <label for="blocked_reason" class="form-label fw-semibold">Blocked Reason</label>
+      <input id="blocked_reason" type="text" class="form-control <% if(getError('blocked_reason')) { %>is-invalid<% } %>" name="blocked_reason" value="<%= data.blocked_reason || '' %>">
+      <% if(getError('blocked_reason')) { %><div class="invalid-feedback"><%= getError('blocked_reason')['msg'] %></div><% } %>
+    </div>
+    <div class="mb-4">
+      <label class="form-label fw-semibold d-block">Role</label>
+      <div class="d-flex flex-wrap gap-3 p-2 rounded border <% if(getError('roles')) { %>border-danger<% } %>">
+        <% let i = 0; %>
+        <% (roles||[]).forEach(role => { %>
+          <label class="d-flex align-items-center gap-2"><input id="roles<%= i %>" type="checkbox" name="roles[]" value="<%= role.id %>" class="w-4 h-4" <% if((data.roles||[]).some(r => r.id === role.id)) { %>checked<% } %>><span><%= role.name %></span></label>
+        <% i++; }); %>
+      </div>
+      <% if(getError('roles')) { %><div class="text-danger small mt-1"><%= getError('roles')['msg'] %></div><% } %>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary-tw px-4 py-2"><i class="fas fa-save me-1"></i> Save</button>
+      <a href="<%= route('admin.v1.access.user.index') %>" class="btn btn-danger px-4 py-2 text-white">Back</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  function previewImage(event) {
+    const preview = document.getElementById('preview');
+    preview.innerHTML = '';
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) { const img = document.createElement('img'); img.src = e.target.result; img.style.maxWidth='160px'; img.className='rounded border p-1'; preview.appendChild(img); };
+      reader.readAsDataURL(file);
+    } else { preview.innerHTML = '<p class="text-muted">No image selected</p>'; }
+  }
+  $(document).ready(function(){
+    $('#div_blocked_reason').toggle($('#blocked').is(':checked'));
+    $('#blocked').click(function(){
+      if(this.checked){ $('#div_blocked_reason').show(); } else { $('#blocked_reason').val(''); $('#div_blocked_reason').hide(); }
+    });
+  });
+</script>

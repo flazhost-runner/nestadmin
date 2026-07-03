@@ -1,0 +1,70 @@
+<!-- Sidebar (Tailwind, themeable) -->
+<aside id="tw-sidebar" class="sidebar-gradient text-white w-64 min-h-screen fixed top-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col">
+    <!-- Brand -->
+    <a href="<%= route('admin.v1.dashboard.index') %>" class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+        <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center overflow-hidden shrink-0">
+            <% if (setting && setting.logo) { %>
+                <img src="<%= getFile(setting.logo) %>" alt="logo" class="w-full h-full object-contain p-1">
+            <% } else { %>
+                <i class="fas fa-chart-line text-xl"></i>
+            <% } %>
+        </div>
+        <span class="text-lg font-bold truncate"><%= setting && setting.name ? setting.name : 'Admin Panel' %></span>
+    </a>
+
+    <!-- Nav -->
+    <% var _p = (typeof fullUrl !== 'undefined' && fullUrl) ? fullUrl : '';
+       function navActive(seg) { return _p.indexOf(seg) !== -1 ? ' active' : ''; } %>
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <a href="<%= route('admin.v1.dashboard.index') %>"
+           class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<%= navActive('/dashboard') %>">
+            <i class="fas fa-tachometer-alt w-5 text-center"></i>
+            <span>Dashboard</span>
+        </a>
+        <% if (hasAccess('admin.v1.components.index','GET')) { %>
+        <a href="<%= route('admin.v1.components.index') %>"
+           class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<%= navActive('/components') %>">
+            <i class="fas fa-cubes w-5 text-center"></i>
+            <span>UI Components</span>
+        </a>
+        <% } %>
+
+        <% if (
+            hasAccess('admin.v1.access.permission.index','GET') ||
+            hasAccess('admin.v1.access.role.index','GET') ||
+            hasAccess('admin.v1.access.user.index','GET') ||
+            hasAccess('admin.v1.setting.index','GET')
+        ) { %>
+        <p class="px-4 pt-5 pb-2 text-xs uppercase tracking-wider text-white/70 font-bold">Maintenance</p>
+
+        <% if (hasAccess('admin.v1.access.permission.index','GET')) { %>
+        <a href="<%= route('admin.v1.access.permission.index') %>" class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<%= navActive('/permission') %>">
+            <i class="fas fa-key w-5 text-center"></i><span>Permission</span>
+        </a>
+        <% } %>
+        <% if (hasAccess('admin.v1.access.role.index','GET')) { %>
+        <a href="<%= route('admin.v1.access.role.index') %>" class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<%= navActive('/role') %>">
+            <i class="fas fa-user-shield w-5 text-center"></i><span>Role</span>
+        </a>
+        <% } %>
+        <% if (hasAccess('admin.v1.access.user.index','GET')) { %>
+        <a href="<%= route('admin.v1.access.user.index') %>" class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<%= navActive('/user') %>">
+            <i class="fas fa-users w-5 text-center"></i><span>User</span>
+        </a>
+        <% } %>
+        <% if (hasAccess('admin.v1.setting.index','GET')) { %>
+        <a href="<%= route('admin.v1.setting.index') %>" class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<%= navActive('/setting') %>">
+            <i class="fas fa-cog w-5 text-center"></i><span>Setting</span>
+        </a>
+        <% } %>
+        <% } %>
+    </nav>
+
+    <div class="px-6 py-4 text-xs text-white/40 border-t border-white/10">
+        <%= setting && setting.copyright ? setting.copyright : '' %>
+    </div>
+</aside>
+
+<!-- Overlay (mobile) -->
+<div id="tw-sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden"></div>
+<!-- End Sidebar -->
