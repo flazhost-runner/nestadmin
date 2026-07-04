@@ -1,8 +1,13 @@
 {
   "name": "NestAdmin",
   "language": "nodejs",
-  "install": ["npm install"],
-  "migrate": ["npm run migration:run"],
+  "install": [
+    "npm install"
+  ],
+  "migrate": [
+    "npm run migration:run",
+    "npm run seed"
+  ],
   "start": "npm run start:dev",
   "url": "http://localhost:${APP_PORT}",
   "readyPath": "/"
