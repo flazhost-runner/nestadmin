@@ -57,6 +57,8 @@ export class PermissionWebController {
 
   @Get(`${BASE}`)
   async index(@Req() req: Request, @Res() res: Response) {
+    // Auto-discover named routes → permissions (paritas NodeAdmin/GoAdmin).
+    await this.permissionService.syncFromRouteRegistry();
     const filter = req.query as Record<string, any>;
     const result = await this.permissionService.index(filter);
     delete (req.session as any).errors;

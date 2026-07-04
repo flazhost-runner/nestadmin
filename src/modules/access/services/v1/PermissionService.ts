@@ -23,6 +23,32 @@ export class PermissionService implements IPermissionService {
     private permissionRepo: Repository<Permission>,
   ) {}
 
+  /**
+   * Auto-discover permission dari named routes — paritas NodeAdmin
+   * (getAllRegisteredRoute) & GoAdmin: setiap route terdaftar di routeRegistry
+   * di-upsert jadi row permission (idempoten). Dipanggil saat halaman
+   * Permission Management dibuka, jadi route baru otomatis muncul.
+   */
+  async syncFromRouteRegistry(): Promise<void> {
+    for (const route of routeRegistry.getAll()) {
+      const existing = await this.permissionRepo.findOne({
+        where: {
+          name: route.name,
+          method: route.method,
+          guard_name: route.guardName,
+        },
+      });
+      if (existing) continue;
+      await this.permissionRepo.save(
+        this.permissionRepo.create({
+          name: route.name,
+          method: route.method,
+          guard_name: route.guardName,
+        }),
+      );
+    }
+  }
+
   async index(filter: any) {
     const clean = removePrefix(filter, 'q_');
     let query = this.permissionRepo.createQueryBuilder('permissions');

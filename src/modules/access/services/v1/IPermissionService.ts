@@ -1,5 +1,6 @@
 /** Kontrak PermissionService (Dependency Inversion + Interface Segregation). */
 export interface IPermissionService {
+  syncFromRouteRegistry(): Promise<void>;
   index(filter: any): Promise<any>;
   store(request: any): Promise<any>;
   edit(id: string): Promise<any>;
