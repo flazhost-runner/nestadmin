@@ -15,7 +15,7 @@ import csurf from 'csurf';
 const expressLayouts = require('express-ejs-layouts');
 import { AppModule } from './app.module';
 import { AppExceptionFilter } from './filters/app-exception.filter';
-import AppDataSource from './config/ormconfig';
+import { DataSource } from 'typeorm';
 import { buildSessionStore } from './services/sessionStore';
 
 async function bootstrap() {
@@ -56,7 +56,7 @@ async function bootstrap() {
   const sessionStore = buildSessionStore({
     driver: config.get<string>('SESSION_DRIVER', 'database'),
     redisUrl: config.get<string>('REDIS_URL', 'redis://127.0.0.1:6379'),
-    dataSource: AppDataSource,
+    dataSource: app.get(DataSource),
     ttlMs: sessionTtlHours * 60 * 60 * 1000,
     isTest: config.get('NODE_ENV') === 'test',
   });
