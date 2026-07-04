@@ -64,6 +64,14 @@ export async function seedTestDb(ds: DataSource): Promise<{
 }> {
   const rounds = 4 // fast for tests
 
+  // Migrasi kini ikut men-seed data awal (migration AddAdminUser — paritas
+  // NodeAdmin/GoAdmin). Bersihkan dulu supaya fixture test ini jadi satu-satunya
+  // sumber data dan ekspektasi jumlah baris di spec tetap akurat.
+  await ds.query(`DELETE FROM users_roles`)
+  await ds.query(`DELETE FROM users`)
+  await ds.query(`DELETE FROM roles`)
+  await ds.query(`DELETE FROM settings`)
+
   // Setting singleton
   await ds.query(
     `INSERT INTO settings (id, initial, name, description, theme, fe_template, created_at, updated_at)
