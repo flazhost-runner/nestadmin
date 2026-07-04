@@ -5,8 +5,7 @@
     "npm install"
   ],
   "migrate": [
-    "npm run migration:run",
-    "npm run seed"
+    "npm run migration:run"
   ],
   "start": "npm run start:dev",
   "url": "http://localhost:${APP_PORT}",
