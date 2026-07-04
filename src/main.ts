@@ -11,6 +11,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import csurf from 'csurf';
+import * as express from 'express';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const expressLayouts = require('express-ejs-layouts');
 import { AppModule } from './app.module';
@@ -78,6 +79,12 @@ async function bootstrap() {
 
   // Flash messages
   app.use(flash());
+
+  // Body parser HARUS terpasang SEBELUM csurf: bodyParser bawaan Nest baru
+  // di-register saat listen() (setelah semua app.use() di bootstrap), sehingga
+  // req.body._csrf selalu kosong dan SEMUA POST form web gagal EBADCSRFTOKEN.
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
 
   // CSRF protection — 3 jalur: body._csrf, query._csrf, header x-csrf-token. Skip /api/ routes.
   if (config.get('NODE_ENV') !== 'test') {
