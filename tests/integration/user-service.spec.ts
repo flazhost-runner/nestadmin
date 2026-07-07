@@ -133,9 +133,10 @@ describe('UserService (integration, SQLite :memory:)', () => {
       expect(Array.isArray(result.roles)).toBe(true)
     })
 
-    it('returns null data for non-existent id', async () => {
-      const result = await service.edit('00000000-0000-0000-0000-000000000000')
-      expect(result.data).toBeNull()
+    it('throws 404 for non-existent id', async () => {
+      await expect(
+        service.edit('00000000-0000-0000-0000-000000000000'),
+      ).rejects.toThrow()
     })
   })
 
@@ -183,8 +184,7 @@ describe('UserService (integration, SQLite :memory:)', () => {
         roles: [userRoleId],
       })
       await service.delete(created.id)
-      const after = await service.edit(created.id)
-      expect(after.data).toBeNull()
+      await expect(service.edit(created.id)).rejects.toThrow()
     })
 
     it('throws 404 for non-existent user', async () => {

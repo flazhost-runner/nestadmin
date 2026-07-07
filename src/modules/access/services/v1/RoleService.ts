@@ -51,7 +51,9 @@ export class RoleService implements IRoleService {
   }
 
   async edit(id: string) {
-    return this.roleRepo.findOne({ where: { id } });
+    const role = await this.roleRepo.findOne({ where: { id } });
+    if (!role) throw new NotFoundError('Role not found');
+    return role;
   }
 
   async update(id: string, request: any) {

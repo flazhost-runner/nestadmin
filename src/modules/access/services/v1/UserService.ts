@@ -119,6 +119,7 @@ export class UserService implements IUserService {
       where: { id },
       relations: { roles: true },
     });
+    if (!data) throw new NotFoundError('User not found');
     return { data, roles, timezones: TIMEZONES };
   }
 

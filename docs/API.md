@@ -3,6 +3,8 @@
 Base URL: `http://localhost:3000`
 Semua endpoint REST di bawah `/api/v1/*`. Autentikasi memakai **JWT Bearer**.
 
+**Koleksi Postman:** [`postman/NestAdmin.postman_collection.json`](postman/NestAdmin.postman_collection.json). Import ke Postman lalu set variabel koleksi `base_url` (default `http://localhost:3000`) dan `access_token` (dari `POST /api/v1/auth/login`).
+
 ## Format Response
 
 Sukses:

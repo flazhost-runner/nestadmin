@@ -249,6 +249,10 @@ defineFeature(feature, test => {
 
 > **E2E (Playwright) tidak di CI** — jalankan lokal sebelum push: butuh server hidup + DB nyata.
 
+## Pengujian Manual (Postman)
+
+Untuk pengujian manual/eksplorasi terhadap server yang hidup, tersedia koleksi Postman di [`postman/NestAdmin.postman_collection.json`](postman/NestAdmin.postman_collection.json). Import lalu set variabel `base_url` (default `http://localhost:3000`) dan `access_token` (dari `POST /api/v1/auth/login`).
+
 ## Tips
 
 - Tiap test integration **buat `TestingModule` sendiri** — jangan share state antar describe.

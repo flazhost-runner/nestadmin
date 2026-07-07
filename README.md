@@ -132,6 +132,8 @@ Base path: `/api/v1`
 
 Full API reference: [`docs/API.md`](docs/API.md)
 
+Postman collection: [`docs/postman/NestAdmin.postman_collection.json`](docs/postman/NestAdmin.postman_collection.json) (default `base_url` = `http://localhost:3000`).
+
 ## Architecture
 
 ```

@@ -96,9 +96,10 @@ describe('RoleService (integration, SQLite :memory:)', () => {
       expect((result as any).name).toBe('ViewRole')
     })
 
-    it('returns null for non-existent id', async () => {
-      const result = await service.edit('00000000-0000-0000-0000-000000000000')
-      expect(result).toBeNull()
+    it('throws 404 for non-existent id', async () => {
+      await expect(
+        service.edit('00000000-0000-0000-0000-000000000000'),
+      ).rejects.toThrow()
     })
   })
 
@@ -140,8 +141,7 @@ describe('RoleService (integration, SQLite :memory:)', () => {
     it('deletes an existing role', async () => {
       const created: any = await service.store({ name: 'ToDelete', status: 'Active' })
       await service.delete(created.id)
-      const after = await service.edit(created.id)
-      expect(after).toBeNull()
+      await expect(service.edit(created.id)).rejects.toThrow()
     })
 
     it('throws 404 for non-existent role', async () => {
@@ -159,8 +159,8 @@ describe('RoleService (integration, SQLite :memory:)', () => {
       const r1: any = await service.store({ name: 'Bulk1', status: 'Active' })
       const r2: any = await service.store({ name: 'Bulk2', status: 'Active' })
       await service.deleteSelected([r1.id, r2.id])
-      expect(await service.edit(r1.id)).toBeNull()
-      expect(await service.edit(r2.id)).toBeNull()
+      await expect(service.edit(r1.id)).rejects.toThrow()
+      await expect(service.edit(r2.id)).rejects.toThrow()
     })
 
     it('returns empty array for empty ids', async () => {

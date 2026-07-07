@@ -90,7 +90,9 @@ export class PermissionService implements IPermissionService {
   }
 
   async edit(id: string) {
-    return this.permissionRepo.findOne({ where: { id } });
+    const permission = await this.permissionRepo.findOne({ where: { id } });
+    if (!permission) throw new NotFoundError('Permission not found');
+    return permission;
   }
 
   async update(id: string, request: any) {
