@@ -84,7 +84,18 @@ export function buildSessionStore(opts: {
     const { createClient } = require('redis');
     // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment
     const { RedisStore } = require('connect-redis');
-    const redisClient = createClient({ url: opts.redisUrl });
+    // TLS (rediss://) di belakang HAProxy butuh SNI servername = hostname URL,
+    // kalau tidak koneksi ditutup (SocketClosedUnexpectedly). Plain redis:// tak terpengaruh.
+    const isTls = opts.redisUrl.startsWith('rediss://');
+    const socket = isTls
+      ? { tls: true, servername: new URL(opts.redisUrl).hostname }
+      : undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const redisClient = createClient({ url: opts.redisUrl, socket });
+    // Handler error wajib: error socket tanpa listener akan meng-crash proses.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    redisClient.on('error', () => {});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     redisClient.connect().catch(() => {});
     return new RedisStore({ client: redisClient });
   } catch {
