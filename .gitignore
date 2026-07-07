@@ -60,11 +60,13 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 *.sqlite-shm
 *.sqlite-wal
 
-# NestAdmin — user uploads (runtime generated, not versioned)
+# NestAdmin — user uploads (STORAGE_DRIVER=local, runtime generated, not
+# versioned). Ignore all uploaded content but keep the directory scaffolding
+# (.gitkeep) so a fresh clone has the upload dirs. Must re-include the `editor/`
+# dir before its .gitkeep can be un-ignored.
 public/storage/*
 !public/storage/.gitkeep
-
-# NestAdmin — Trumbowyg editor uploads directory
+!public/storage/editor/
 public/storage/editor/*
 !public/storage/editor/.gitkeep
 

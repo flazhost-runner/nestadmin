@@ -17,6 +17,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ComponentsModule } from './modules/components/components.module';
 import { HomeModule } from './modules/home/home.module';
 import { MediaModule } from './modules/media/media.module';
+import { StorageModule } from './services/storage.module';
 import { ViewLocalsMiddleware } from './middleware/view-locals.middleware';
 import { AccessMiddleware } from './middleware/access.middleware';
 import { User } from './modules/access/models/user.entity';
@@ -77,6 +78,8 @@ import { User } from './modules/access/models/user.entity';
     }),
     // Needed by AccessMiddleware (fresh DB query per request)
     TypeOrmModule.forFeature([User]),
+    // StorageModule is @Global() — exports StorageService everywhere
+    StorageModule,
     // SettingModule is @Global() — exports SettingCacheService everywhere
     SettingModule,
     AuthModule,

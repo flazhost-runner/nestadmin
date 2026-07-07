@@ -38,8 +38,8 @@ export class MediaController {
 
   /** GET /admin/v1/media/list → JSON array of uploaded files */
   @Get(`${BASE}/list`)
-  list(@Res() res: Response) {
-    const files = this.mediaService.list();
+  async list(@Res() res: Response) {
+    const files = await this.mediaService.list();
     return res.json({ status: true, message: 'OK', data: files });
   }
 
@@ -59,14 +59,14 @@ export class MediaController {
       },
     }),
   )
-  upload(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
+  async upload(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
     if (!file) {
       return res
         .status(400)
         .json({ status: false, message: 'File not found', data: null });
     }
     try {
-      const saved = this.mediaService.upload(
+      const saved = await this.mediaService.upload(
         file.originalname,
         file.buffer,
         file.mimetype,
@@ -88,7 +88,7 @@ export class MediaController {
    * Body: { key: "filename.ext" }
    */
   @Post(`${BASE}/delete`)
-  deleteFile(@Req() req: Request, @Res() res: Response) {
+  async deleteFile(@Req() req: Request, @Res() res: Response) {
     const key: string = req.body?.key || '';
     if (!key) {
       return res
@@ -96,7 +96,7 @@ export class MediaController {
         .json({ status: false, message: 'Key is required', data: null });
     }
     try {
-      this.mediaService.delete(key);
+      await this.mediaService.delete(key);
       return res.json({ status: true, message: 'Delete Success.', data: null });
     } catch (e: any) {
       return res

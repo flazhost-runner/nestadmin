@@ -34,8 +34,12 @@ export const envValidationSchema = Joi.object({
   // Redis
   REDIS_URL: Joi.string().default('redis://127.0.0.1:6379'),
 
-  // Storage (generic OSS/S3 adapter)
+  // Storage (generic local/OSS/S3 adapter)
   STORAGE_DRIVER: Joi.string().valid('local', 'oss', 's3').default('local'),
+  // Local driver: base dir where objects are written (relative → resolved from
+  // process.cwd()). URL prefix is decoupled (always `/storage`) so an absolute
+  // path (e.g. /var/data in Docker) still renders a valid URL.
+  STORAGE_BASE_PATH: Joi.string().default('public/storage'),
   STORAGE_ACCESS_KEY_ID: Joi.string().allow('').default(''),
   STORAGE_SECRET_ACCESS_KEY: Joi.string().allow('').default(''),
   STORAGE_ENDPOINT: Joi.string().allow('').default(''),

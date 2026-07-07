@@ -2,6 +2,7 @@ import { Injectable, NestMiddleware, Optional, Inject } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { routeRegistry } from '../utils/named-routes';
 import { SettingCacheService } from '../services/setting-cache.service';
+import { StorageService } from '../services/storage.service';
 import { getTheme } from '../config/themes';
 
 @Injectable()
@@ -10,6 +11,9 @@ export class ViewLocalsMiddleware implements NestMiddleware {
     @Optional()
     @Inject(SettingCacheService)
     private settingCache?: SettingCacheService,
+    @Optional()
+    @Inject(StorageService)
+    private storage?: StorageService,
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
@@ -43,11 +47,14 @@ export class ViewLocalsMiddleware implements NestMiddleware {
       }
     };
 
-    // getFile(path) → public asset URL
+    // getFile(key) → render URL for a stored object key.
+    // Driver-aware via StorageService: local → /storage/<key>, oss/s3 → presigned.
+    // Empty → default avatar; absolute URL/path → passthrough unchanged.
     res.locals.getFile = (filePath: string) => {
-      if (!filePath) return '/uploads/modules/access/user/user.png';
-      if (filePath.startsWith('http')) return filePath;
-      return '/uploads/' + filePath;
+      const key = filePath || 'modules/access/user/user.png';
+      if (key.startsWith('http')) return key;
+      if (key.startsWith('/')) return key;
+      return this.storage ? this.storage.getFile(key) : '/' + key;
     };
 
     // fullUrl — current full URL including query string
