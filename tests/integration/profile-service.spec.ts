@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config'
 import { envValidationSchema } from '../../src/config/env'
 import { DataSource } from 'typeorm'
 import { ProfileService } from '../../src/modules/profile/services/v1/ProfileService'
+import { StorageService } from '../../src/services/storage.service'
 import { User } from '../../src/modules/access/models/user.entity'
 import { Role } from '../../src/modules/access/models/role.entity'
 import { Permission } from '../../src/modules/access/models/permission.entity'
@@ -39,7 +40,9 @@ describe('ProfileService (integration, SQLite :memory:)', () => {
         }),
         TypeOrmModule.forFeature([User]),
       ],
-      providers: [ProfileService],
+      // StorageService: dependensi baru ProfileService untuk upload foto
+      // (di app asli disediakan StorageModule yang @Global).
+      providers: [ProfileService, StorageService],
     }).compile()
 
     service = module.get(ProfileService)

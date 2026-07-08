@@ -1,4 +1,15 @@
-import { Controller, Get, Put, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { Request, Response } from 'express';
 import { ProfileService } from '../../../services/v1/ProfileService';
 import { SessionAuthGuard } from '../../../../auth/guards/session-auth.guard';
@@ -26,11 +37,34 @@ export class ProfileWebController {
     });
   }
 
+  // FileFieldsInterceptor WAJIB di sini: tanpa multer, body multipart tidak
+  // pernah di-parse — req.files selalu undefined sehingga foto tidak pernah
+  // terupload. memoryStorage → buffer diteruskan ke StorageService (bukan
+  // tulis-disk langsung) supaya seragam untuk driver local/oss/s3.
   @Put(BASE)
-  async update(@Req() req: Request, @Res() res: Response) {
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'picture', maxCount: 1 }], {
+      storage: memoryStorage(),
+      limits: { fileSize: 2 * 1024 * 1024 },
+      // Whitelist mimetype gambar — selaras validator NodeAdmin (jpeg/jpg/
+      // png/webp). File di luar whitelist di-skip diam-diam (foto lama tetap).
+      fileFilter: (_req, file, cb) => {
+        const ok = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        cb(null, ok.includes(file.mimetype));
+      },
+    }),
+  )
+  async update(
+    @Req() req: Request,
+    @Res() res: Response,
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
+  ) {
     const userId = (req.session as any)?.user?.id;
-    const files = (req as any).files || {};
-    const updated = await this.profileService.update(userId, req.body, files);
+    const updated = await this.profileService.update(
+      userId,
+      req.body,
+      files || {},
+    );
     // Refresh session user
     (req.session as any).user = {
       ...(req.session as any).user,
