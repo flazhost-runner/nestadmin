@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Setting } from '../../models/setting.entity';
 import { ISettingService } from './ISettingService';
 import { SettingCacheService } from '../../../../services/setting-cache.service';
+import { StorageService } from '../../../../services/storage.service';
 import { THEMES } from '../../../../config/themes';
 import { AppError } from '../../../../errors/AppError';
 
@@ -88,6 +89,7 @@ export class SettingService implements ISettingService {
   constructor(
     @InjectRepository(Setting) private repo: Repository<Setting>,
     private cache: SettingCacheService,
+    private storage: StorageService,
   ) {}
 
   async index(filter: Record<string, any> = {}): Promise<any> {
@@ -156,12 +158,15 @@ export class SettingService implements ISettingService {
       data = this.repo.create({ id: uuidv4() });
     }
 
-    // Handle file uploads (multer)
+    // Handle file uploads — buffer multer → StorageService (local/oss/s3).
+    // Field kosong dibiarkan: nilai lama di DB tidak tertimpa.
     const fileFields = ['icon', 'logo', 'login_image'];
     for (const field of fileFields) {
-      if (files?.[field]?.[0]) {
-        request[field] = files[field][0].filename ?? files[field][0].path;
-      }
+      const key = await this.storage.saveUpload(
+        files?.[field]?.[0],
+        'uploads/setting',
+      );
+      if (key) request[field] = key;
     }
 
     const allowed = [

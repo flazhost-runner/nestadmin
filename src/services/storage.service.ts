@@ -1,10 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import * as path from 'path';
+import * as crypto from 'crypto';
 import {
   getStorageClient,
   buildSignedUrl,
   storageConfig,
   LOCAL_URL_PREFIX,
 } from '../config/storageClient';
+
+/** Bentuk minimal file multer (memoryStorage) yang dibutuhkan saveUpload. */
+export interface UploadedFileLike {
+  originalname?: string;
+  buffer?: Buffer;
+}
 
 /**
  * StorageService — single injectable facade over the storage adapter.
@@ -39,6 +47,25 @@ export class StorageService {
   /** Persist a buffer under `key`. Returns the key (stored in the DB). */
   async uploadFile(key: string, buffer: Buffer): Promise<string> {
     await getStorageClient().put(key, buffer);
+    return key;
+  }
+
+  /**
+   * Simpan satu file upload multer (memoryStorage) ke storage, kembalikan
+   * object key untuk disimpan di DB — atau null kalau tidak ada file.
+   *
+   * Key: `<keyPrefix>/<uuid><ext>` (ekstensi dari originalname, default .png).
+   * Jalan di semua STORAGE_DRIVER karena delegasi ke uploadFile → adapter.
+   * Titik upload tunggal untuk profile/user/setting supaya konsisten.
+   */
+  async saveUpload(
+    file: UploadedFileLike | undefined,
+    keyPrefix: string,
+  ): Promise<string | null> {
+    if (!file?.buffer) return null;
+    const ext = path.extname(file.originalname || '').toLowerCase() || '.png';
+    const key = `${keyPrefix.replace(/\/+$/, '')}/${crypto.randomUUID()}${ext}`;
+    await this.uploadFile(key, file.buffer);
     return key;
   }
 

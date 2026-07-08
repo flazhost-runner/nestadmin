@@ -7,6 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { UserService } from '../../src/modules/access/services/v1/UserService'
+import { StorageService } from '../../src/services/storage.service'
 import { User } from '../../src/modules/access/models/user.entity'
 import { Role } from '../../src/modules/access/models/role.entity'
 import { Permission } from '../../src/modules/access/models/permission.entity'
@@ -33,7 +34,9 @@ describe('UserService (integration, SQLite :memory:)', () => {
         }),
         TypeOrmModule.forFeature([User, Role, Permission]),
       ],
-      providers: [UserService],
+      // StorageService: dependensi baru UserService untuk upload foto
+      // (di app asli disediakan StorageModule yang @Global).
+      providers: [UserService, StorageService],
     }).compile()
 
     service = module.get(UserService)
@@ -88,6 +91,22 @@ describe('UserService (integration, SQLite :memory:)', () => {
           roles: [userRoleId],
         }),
       ).rejects.toThrow()
+    })
+
+    it('persists uploaded picture and stores its key', async () => {
+      const result: any = await service.store(
+        {
+          code: 'TST004',
+          name: 'Pic User',
+          email: 'pic@example.com',
+          password: 'password123',
+          status: 'Active',
+          roles: [userRoleId],
+        },
+        { picture: [{ originalname: 'avatar.PNG', buffer: Buffer.from('x') }] },
+      )
+      // Foto tersimpan sebagai object key <prefix>/<uuid>.png (bukan diabaikan)
+      expect(result.picture).toMatch(/^uploads\/user\/[0-9a-f-]+\.png$/)
     })
   })
 
@@ -158,6 +177,23 @@ describe('UserService (integration, SQLite :memory:)', () => {
         roles: [userRoleId],
       })
       expect(result.name).toBe('New Name')
+    })
+
+    it('persists uploaded picture on update', async () => {
+      const created: any = await service.store({
+        code: 'UPD002',
+        name: 'Pic Update',
+        email: 'picupd@example.com',
+        password: 'password123',
+        status: 'Active',
+        roles: [userRoleId],
+      })
+      const result: any = await service.update(
+        created.id,
+        { name: 'Pic Update', roles: [userRoleId] },
+        { picture: [{ originalname: 'p.jpg', buffer: Buffer.from('x') }] },
+      )
+      expect(result.picture).toMatch(/^uploads\/user\/[0-9a-f-]+\.jpg$/)
     })
 
     it('throws 404 for non-existent user', async () => {

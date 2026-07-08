@@ -12,11 +12,25 @@ import {
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { Request, Response } from 'express';
 import { UserService } from '../../../services/v1/UserService';
 import { SessionAuthGuard } from '../../../../auth/guards/session-auth.guard';
 import { routeRegistry } from '../../../../../utils/named-routes';
+
+// Upload foto user (field "picture") — memoryStorage + whitelist mimetype
+// (jpeg/jpg/png/webp), buffer diteruskan ke StorageService (local/oss/s3).
+const IMAGE_MIMES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const pictureUpload = FileFieldsInterceptor(
+  [{ name: 'picture', maxCount: 1 }],
+  {
+    storage: memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) =>
+      cb(null, IMAGE_MIMES.includes(file.mimetype)),
+  },
+);
 
 const BASE = '/admin/v1/access/users';
 
@@ -73,18 +87,21 @@ export class UserWebController {
   }
 
   @Post(`${BASE}`)
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(pictureUpload)
   async store(
     @Body() body: any,
-    @UploadedFiles() _files: any,
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const selected = body['roles[]'] ?? body.roles ?? [];
-    await this.userService.store({
-      ...body,
-      roles: Array.isArray(selected) ? selected : [selected],
-    });
+    await this.userService.store(
+      {
+        ...body,
+        roles: Array.isArray(selected) ? selected : [selected],
+      },
+      files || {},
+    );
     (req as any).flash?.('success', 'Create User Success.');
     res.redirect(BASE);
   }
@@ -105,19 +122,23 @@ export class UserWebController {
   }
 
   @Put(`${BASE}/:id`)
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(pictureUpload)
   async update(
     @Param('id') id: string,
     @Body() body: any,
-    @UploadedFiles() _files: any,
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const selected = body['roles[]'] ?? body.roles ?? [];
-    await this.userService.update(id, {
-      ...body,
-      roles: Array.isArray(selected) ? selected : [selected],
-    });
+    await this.userService.update(
+      id,
+      {
+        ...body,
+        roles: Array.isArray(selected) ? selected : [selected],
+      },
+      files || {},
+    );
     (req as any).flash?.('success', 'Update User Success.');
     res.redirect(BASE);
   }

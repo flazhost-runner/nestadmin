@@ -14,6 +14,7 @@ import {
   generateCode,
 } from '../../../../helpers/functions';
 import { AppError, NotFoundError } from '../../../../errors/AppError';
+import { StorageService } from '../../../../services/storage.service';
 
 const TIMEZONES = [
   'UTC',
@@ -55,6 +56,7 @@ export class UserService implements IUserService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Role) private roleRepo: Repository<Role>,
+    private storage: StorageService,
   ) {}
 
   async index(filter: any) {
@@ -100,10 +102,12 @@ export class UserService implements IUserService {
     if (!roles.length) {
       throw new NotFoundError('Roles Not Found');
     }
-    // file upload placeholder — extend when multer/s3 is wired
-    if (Array.isArray(files) && files.length > 0) {
-      request.picture = files[0]?.filename ?? null;
-    }
+    // Upload foto — buffer multer → StorageService (local/oss/s3).
+    const picKey = await this.storage.saveUpload(
+      files?.picture?.[0],
+      'uploads/user',
+    );
+    if (picKey) request.picture = picKey;
     const clean = removeEmptyFields({ ...request, id });
     if (!clean.code) clean.code = generateCode('USR');
     clean.password = await bcrypt.hash(clean.password, 10);
@@ -134,9 +138,12 @@ export class UserService implements IUserService {
       ),
     });
     if (!roles.length) throw new NotFoundError('Roles Not Found');
-    if (Array.isArray(files) && files.length > 0) {
-      request.picture = files[0]?.filename ?? null;
-    }
+    // Upload foto — buffer multer → StorageService (local/oss/s3).
+    const picKey = await this.storage.saveUpload(
+      files?.picture?.[0],
+      'uploads/user',
+    );
+    if (picKey) request.picture = picKey;
     const clean = removeEmptyFields(request);
     if (clean.password) clean.password = await bcrypt.hash(clean.password, 10);
     else delete clean.password;
