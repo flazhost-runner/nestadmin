@@ -59,7 +59,10 @@ export class MediaController {
       },
     }),
   )
-  async upload(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
+  async upload(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
     if (!file) {
       return res
         .status(400)

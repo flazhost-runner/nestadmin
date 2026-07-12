@@ -80,3 +80,5 @@ public/fe/templates/_catalog.json
 
 # Local database
 *.db
+# NestAdmin — dev SQLite DB (extensionless, runtime generated)
+/nestadmin

@@ -84,7 +84,7 @@ function s3PresignedUrl(opts: {
   // path-style when endpoint is set (MinIO, R2, OSS-S3-compat, etc.)
   const pathStyle = !!endpoint;
   const host = pathStyle
-    ? endpoint!.replace(/^https?:\/\//, '')
+    ? endpoint.replace(/^https?:\/\//, '')
     : `${bucket}.s3.${region}.amazonaws.com`;
   const canonicalUri = pathStyle ? `/${bucket}/${key}` : `/${key}`;
 
@@ -288,8 +288,15 @@ function buildS3Client(): StorageClient {
 // SDKs are only required for the write path (put/list/delete).
 // ---------------------------------------------------------------------------
 export function buildSignedUrl(key: string, ttlSeconds: number): string {
-  const { driver, accessKeyId, secretAccessKey, region, bucket, endpoint, ssl } =
-    storageConfig;
+  const {
+    driver,
+    accessKeyId,
+    secretAccessKey,
+    region,
+    bucket,
+    endpoint,
+    ssl,
+  } = storageConfig;
   if (driver === 'local') {
     return `${LOCAL_URL_PREFIX}/${key}`.replace(/\/+/g, '/');
   }
